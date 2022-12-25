@@ -149,6 +149,7 @@ int main(int argc, const char* argv[])
                  
 
         }
+        # logging:
         logging(basename + "_log.log" , (t+1)*swapsize , d_mdVx , d_mdVy , d_mdVz , d_vx, d_vy , d_vz, N , Nmd, grid_size );
         xyz_trj(basename + "_traj.xyz", d_mdX, d_mdY , d_mdZ, Nmd);
         xyz_trj(basename + "_vel.xyz", d_mdVx, d_mdVy , d_mdVz, Nmd);
