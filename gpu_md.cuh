@@ -46,8 +46,6 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
                     mdY[i+j*m]  = xx[1];
 
                 }
-
-            
             }   
             xx[0]+=1.2*r;
         }
@@ -77,8 +75,12 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
 
             
             }
-            std::cout<<"hi"<<std::endl;
             xx[0]+=(2*r+1) ;
+        }
+
+        if (topology == 3)
+        {
+            std::cout<<"This would be Mahtab work in the near future!"<<std::endl;
         }
     }   
     
