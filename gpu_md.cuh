@@ -49,10 +49,9 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
 
             
             }   
-            std::cout<<"fuck"<<std::endl;
             xx[0]+=1.2*r;
         }
-    }
+    }            std::cout<<"fuck"<<std::endl;
     if (topology == 2)
     {
         for (unsigned int j = 0 ; j< n ; j++)
