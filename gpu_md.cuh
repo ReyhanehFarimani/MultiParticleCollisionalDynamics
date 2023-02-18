@@ -1,165 +1,186 @@
+// This function initializes the position and velocity of the MD particles.
+// Currently, it only supports rings.
 
-// position and velocity of MD particles are initialized here ( currenty it only supports rings)
-__host__ void initMD(double *d_mdX, double *d_mdY , double *d_mdZ ,
- double *d_mdVx , double *d_mdVy , double *d_mdVz, 
- double *d_mdAx , double *d_mdAy , double *d_mdAz,
-double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
- double *d_L, double ux, double xx[3], int n, int m, int topology, int mass)
+// Host function
+__host__ void initMD(double *d_mdX, double *d_mdY, double *d_mdZ,
+                     double *d_mdVx, double *d_mdVy, double *d_mdVz,
+                     double *d_mdAx, double *d_mdAy, double *d_mdAz,
+                     double *d_Fx_holder, double *d_Fy_holder, double *d_Fz_holder,
+                     double *d_L, double ux, double xx[3], int n, int m,
+                     int topology, int mass)
 {
     int Nmd = n * m;
-    double *mdX, *mdY, *mdZ, *mdVx, *mdVy , *mdVz, *mdAx , *mdAy, *mdAz;
-    //host allocation:
-    mdX = (double*)malloc(sizeof(double) * Nmd);  mdY = (double*)malloc(sizeof(double) * Nmd);  mdZ = (double*)malloc(sizeof(double) * Nmd);
-    mdVx = (double*)malloc(sizeof(double) * Nmd); mdVy = (double*)malloc(sizeof(double) * Nmd); mdVz = (double*)malloc(sizeof(double) * Nmd);
-    mdAx = (double*)malloc(sizeof(double) * Nmd); mdAy = (double*)malloc(sizeof(double) * Nmd); mdAz = (double*)malloc(sizeof(double) * Nmd);
+    double *mdX, *mdY, *mdZ, *mdVx, *mdVy, *mdVz, *mdAx, *mdAy, *mdAz;
+
+    // Host allocation
+    mdX = (double*)malloc(sizeof(double) * Nmd);
+    mdY = (double*)malloc(sizeof(double) * Nmd);
+    mdZ = (double*)malloc(sizeof(double) * Nmd);
+    mdVx = (double*)malloc(sizeof(double) * Nmd);
+    mdVy = (double*)malloc(sizeof(double) * Nmd);
+    mdVz = (double*)malloc(sizeof(double) * Nmd);
+    mdAx = (double*)malloc(sizeof(double) * Nmd);
+    mdAy = (double*)malloc(sizeof(double) * Nmd);
+    mdAz = (double*)malloc(sizeof(double) * Nmd);
+
+    // Normal distribution generator
     std::normal_distribution<double> normaldistribution(0, 0.44);
+
+    // Ring parameters
     double theta = 4 * M_PI_2 / m;
-    double r=m/(4 * M_PI_2);
+    double r = m / (4 * M_PI_2);
+
+    // Ring topology 1
     if (topology == 1)
     {
-        for (unsigned int j = 0 ; j< n ; j++)
+        for (unsigned int j = 0; j < n; j++)
         {
-            
-            for (unsigned int i =0 ; i<m ; i++)
+            for (unsigned int i = 0; i < m; i++)
             {
-                
-                mdAx[i+j*m]=0;
-                mdAy[i+j*m]=0;
-                mdAz[i+j*m]=0;
-                //monomer[i].init(kT ,box, mass);
+                // Set acceleration to 0
+                mdAx[i+j*m] = 0;
+                mdAy[i+j*m] = 0;
+                mdAz[i+j*m] = 0;
+
+                // Set velocity to random normal distribution
                 mdVx[i+j*m] = normaldistribution(generator);
                 mdVy[i+j*m] = normaldistribution(generator);
                 mdVz[i+j*m] = normaldistribution(generator);
-                //monomer[i].x[0]  = xx[0] + r * sin(i *theta);
-                mdX[i+j*m]  = xx[0] + r * sin(i *theta);
-                //monomer[i].x[1]  = xx[1] + r * cos(i *theta);
-                if ( j%2 == 0 )
-                {
-                    mdY[i+j*m]  = xx[1] + r * cos(i *theta);
-                    //monomer[i].x[2]  = xx[2];
-                    mdZ[i+j*m]  = xx[2];
-                }
-                if(j%2==1)
-                {
-                    mdZ[i+j*m]  = xx[2] + r * cos(i *theta);
-                    //monomer[i].x[2]  = xx[2];
-                    mdY[i+j*m]  = xx[1];
 
+                // Set position
+                mdX[i+j*m] = xx[0] + r * sin(i * theta);
+                if (j % 2 == 0)
+                {
+                    mdY[i+j*m] = xx[1] + r * cos(i * theta);
+                    mdZ[i+j*m] = xx[2];
                 }
-
-            
-            }   
-            xx[0]+=1.2*r;
+                if (j % 2 == 1)
+                {
+                    mdZ[i+j*m] = xx[2] + r * cos(i * theta);
+                    mdY[i+j*m] = xx[1];
+                }
+            }
+            xx[0] += 1.2 * r;
         }
-    }            std::cout<<"fuck"<<std::endl;
+    }
+    // Ring topology 2
     if (topology == 2)
     {
-        for (unsigned int j = 0 ; j< n ; j++)
+        for (unsigned int j = 0; j < n; j++)
         {
-            
-            for (unsigned int i =0 ; i<m ; i++)
+            for (unsigned int i = 0; i < m; i++)
             {
-                
-                mdAx[i+j*m]=0;
-                mdAy[i+j*m]=0;
-                mdAz[i+j*m]=0;
-                //monomer[i].init(kT ,box, mass);
+                // Set acceleration to 0
+                mdAx[i+j*m] = 0;
+                mdAy[i+j*m] = 0;
+                mdAz[i+j*m] = 0;
+               
+                // Set velocity to random normal distribution
                 mdVx[i+j*m] = normaldistribution(generator);
                 mdVy[i+j*m] = normaldistribution(generator);
                 mdVz[i+j*m] = normaldistribution(generator);
-                //monomer[i].x[0]  = xx[0] + r * sin(i *theta);
+
+                // Set position
                 mdX[i+j*m]  = xx[0] + r * sin(i *theta);
-                //monomer[i].x[1]  = xx[1] + r * cos(i *theta);
-
                 mdY[i+j*m]  = xx[1] + r * cos(i *theta);
-                //monomer[i].x[2]  = xx[2];
                 mdZ[i+j*m]  = xx[2];
-
             
             }
-            std::cout<<"hi"<<std::endl;
-            xx[0]+=(2*r+1) ;
+            
+            xx[0] += 1.2 * r;
         }
     }   
     
 
-    double px =0 , py =0 ,pz =0;
-    for (unsigned int i =0 ; i<Nmd ; i++)
-    {
-        px+=mdVx[i] ; 
-        py+=mdVy[i] ; 
-        pz+=mdVz[i] ;
+    // Calculate the center of mass velocities and subtract them from each particle's velocity
+    // to ensure the system's net momentum is zero.
+    double px = 0, py = 0, pz = 0;
+    for (unsigned int i = 0; i < Nmd; i++) {
+    px += mdVx[i];
+    py += mdVy[i];
+    pz += mdVz[i];
     }
 
-    for (unsigned int i =0 ; i<Nmd ; i++)
-    {
-        mdVx[i]-=px/Nmd ;
-        mdVy[i]-=py/Nmd ;
-        mdVz[i]-=pz/Nmd ;
+    for (unsigned int i = 0; i < Nmd; i++) {
+    mdVx[i] -= px / Nmd;
+    mdVy[i] -= py / Nmd;
+    mdVz[i] -= pz / Nmd;
     }
-    cudaMemcpy(d_mdX ,mdX, Nmd*sizeof(double), cudaMemcpyHostToDevice);   cudaMemcpy(d_mdY ,mdY, Nmd*sizeof(double), cudaMemcpyHostToDevice);   cudaMemcpy(d_mdZ ,mdZ, Nmd*sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_mdVx ,mdVx, Nmd*sizeof(double), cudaMemcpyHostToDevice); cudaMemcpy(d_mdVy ,mdVy, Nmd*sizeof(double), cudaMemcpyHostToDevice); cudaMemcpy(d_mdVz ,mdVz, Nmd*sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_mdAx ,mdAx, Nmd*sizeof(double), cudaMemcpyHostToDevice); cudaMemcpy(d_mdAy ,mdAy, Nmd*sizeof(double), cudaMemcpyHostToDevice); cudaMemcpy(d_mdAz ,mdAz, Nmd*sizeof(double), cudaMemcpyHostToDevice);
 
+    // Copy arrays from host to device memory
+    cudaMemcpy(d_mdX, mdX, Nmd * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mdY, mdY, Nmd * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mdZ, mdZ, Nmd * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mdVx, mdVx, Nmd * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mdVy, mdVy, Nmd * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mdVz, mdVz, Nmd * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mdAx, mdAx, Nmd * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mdAy, mdAy, Nmd * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mdAz, mdAz, Nmd * sizeof(double), cudaMemcpyHostToDevice);
 
-
-    free(mdX);    free(mdY);    free(mdZ);
-    free(mdVx);   free(mdVy);   free(mdVz);
-    free(mdAx);   free(mdAy);   free(mdAz);
-
+    // Free memory allocated for arrays
+    free(mdX);
+    free(mdY);
+    free(mdZ);
+    free(mdVx);
+    free(mdVy);
+    free(mdVz);
+    free(mdAx);
+    free(mdAy);
+    free(mdAz);
 }
 
 
-// a tool for resetting a vector to zero!
-__global__ void reset_vector_to_zero(double *F1 , double *F2 , double *F3 , int size)
-{
-    int tid = blockIdx.x * blockDim.x + threadIdx.x ;
-    if (tid<size)
+// This kernel function resets the elements of the input vectors to zero
+__global__ void reset_vector_to_zero(double* F1, double* F2, double* F3, int size)
     {
-        F1[tid] = 0 ;
-        F2[tid] = 0 ;
-        F3[tid] = 0 ;
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid < size)
+    {
+        F1[tid] = 0;
+        F2[tid] = 0;
+        F3[tid] = 0;
     }
 }
-//sum kernel: is used for sum the interaxtion matrix:F in one axis and calculate acceleration.
-__global__ void sum_kernel(double *F1 ,double *F2 , double *F3,
- double *A1 ,double *A2 , double *A3,
-  int size)
-{
-    int tid = blockIdx.x * blockDim.x + threadIdx.x ;
-    if (tid<size)
-    {
-        double sum =0;
-        for (int i = 0 ; i<size ; ++i)
-        {
-            int index = tid *size +i;
+
+
+// This kernel function sums the interaction matrix F in each axis and computes acceleration
+__global__ void sum_kernel(double* F1, double* F2, double* F3,
+                           double* A1, double* A2, double* A3,
+                           int size) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    // Calculate the sum of F1 elements for the current thread
+    if (tid < size) {
+        double sum = 0;
+        for (int i = 0; i < size; ++i) {
+            int index = tid * size + i;
             sum += F1[index];
         }
         A1[tid] = sum;
     }
-    if (size<tid+1 && tid<2*size)
-    {
-        tid -=size;
-        double sum =0;
-        for (int i = 0 ; i<size ; ++i)
-        {
-            int index = tid *size +i ;
+    
+    // Calculate the sum of F2 elements for the current thread
+    if (size < tid + 1 && tid < 2 * size) {
+        tid -= size;
+        double sum = 0;
+        for (int i = 0; i < size; ++i) {
+            int index = tid * size + i;
             sum += F2[index];
         }
         A2[tid] = sum;        
     }
-    if (2*size<tid+1 && tid<3*size)
-    {
-        tid -=2*size;
-        double sum =0;
-        for (int i = 0 ; i<size ; ++i)
-        {
-            int index = tid *size +i;
+    
+    // Calculate the sum of F3 elements for the current thread
+    if (2 * size < tid + 1 && tid < 3 * size) {
+        tid -= 2 * size;
+        double sum = 0;
+        for (int i = 0; i < size; ++i) {
+            int index = tid * size + i;
             sum += F3[index];
         }
         A3[tid] = sum;        
     }
-
 }
 
 //calculating interaction matrix of the system in the given time
