@@ -92,7 +92,8 @@ int main(int argc, const char* argv[])
     cudaMalloc((void**)&d_index, sizeof(int) *N);
     
     // Allocate device memory for box attributes,
-    // d_L is a copy of 
+    // d_L is a copy of box dimention in the GPU.
+    // d_r is a ranfom vector for grid shifting.
     double *d_L, *d_r;   
     cudaMalloc((void**)&d_L, sizeof(double) *3);
     cudaMalloc((void**)&d_r, sizeof(double) *3); 
