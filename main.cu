@@ -25,7 +25,7 @@
 #include "logging.cuh"
 int main(int argc, const char* argv[])
 {
-
+    //Check for number of parsed argument:
     if( argc !=16 )
     {
         std::cout<<"Argument parsing failed!\n";
@@ -34,52 +34,68 @@ int main(int argc, const char* argv[])
         std::cout<<"Number of given arguments: "<<argc<<"\n";
         return 1;
     }
-    std::string inputfile= argv[1]; //restart file name
-    std::string basename = argv[2]; //output base name
-    L[0] = atof(argv[3]); //dimension of the simulation in x direction
-    L[1] = atof(argv[4]); //dimension of the simulation in y direction
-    L[2] = atof(argv[5]); //dimension of the simulation in z direction
-    density = atoi(argv[6]); //density of the particles
-    n_md = atoi(argv[7]); //number of rings
-    m_md = atof(argv[8]); //number of monomer in each ring
-    shear_rate = atof(argv[9]); //shear rate
-    h_md = atof(argv[10]); //md time step
-    h_mpcd = atof(argv[11]); //mpcd time step
-    swapsize = atoi(argv[12]);//output interval
-    simuationtime = atoi(argv[13]);//final simulation step count
-    TIME = atoi(argv[14]);//starting
-    topology = atoi(argv[15]);
 
-      
+    // Setting the parsed argument:
+    std::string inputfile= argv[1];         // Restart file name(The one reading from it!)
+                                            // If the simulation start with t=0, put some 
+                                            // dummy argument.
+    std::string basename = argv[2];         // Output base name
+    L[0] = atof(argv[3]);                   // Dimension of the simulation in x direction
+    L[1] = atof(argv[4]);                   // Dimension of the simulation in y direction
+    L[2] = atof(argv[5]);                   // Dimension of the simulation in z direction
+    density = atoi(argv[6]);                // Density of the particles
+    n_md = atoi(argv[7]);                   // Number of rings
+    m_md = atof(argv[8]);                   // Number of monomer in each ring
+    shear_rate = atof(argv[9]);             // Shear rate
+    h_md = atof(argv[10]);                  // Md time step
+    h_mpcd = atof(argv[11]);                // Mpcd time step
+    swapsize = atoi(argv[12]);              // Output interval
+    simuationtime = atoi(argv[13]);         // Final simulation step count
+    TIME = atoi(argv[14]);                  // Starting time 
+    topology = atoi(argv[15]);              // System topology 1 is a poly[n]catenane
+                                            // 2 is the bonded ring.
+
+    // Setting some constarint based on parsed argument  
     double ux =shear_rate * L[2];
     int Nc = L[0]*L[1]*L[2];
     int N =density* Nc;
     int Nmd = n_md * m_md;
     int grid_size = ((N + blockSize) / blockSize);
     
-     //random generator
+     // Random generator
      curandGenerator_t gen;
      curandCreateGenerator(&gen, 
          CURAND_RNG_PSEUDO_DEFAULT);
-     /* Set seed */
+     // See=tting seed for the simulation
+     /* !NEVER EVER CHANGE THIS PART! */
      curandSetPseudoRandomGeneratorSeed(gen, 
          4294967296ULL^time(NULL));
      curandState *devStates;
-     cudaMalloc((void **)&devStates, blockSize * grid_size *sizeof(curandState));
+     cudaMalloc((void **)&devStates,
+         blockSize * grid_size *sizeof(curandState));
      setup_kernel<<<grid_size, blockSize>>>(time(NULL), devStates);
     
 
-    // Allocate device memory for mpcd particle:
+    // Allocate device memory for mpcd particle, position and velocity:
     double *d_x, *d_vx , *d_y , *d_vy , *d_z , *d_vz;
+    
+    cudaMalloc((void**)&d_x, sizeof(double) * N);   
+    cudaMalloc((void**)&d_y, sizeof(double) * N);   
+    cudaMalloc((void**)&d_z, sizeof(double) * N);
+    cudaMalloc((void**)&d_vx, sizeof(double) * N);  
+    cudaMalloc((void**)&d_vy, sizeof(double) * N);  
+    cudaMalloc((void**)&d_vz, sizeof(double) * N);
+
+    // The mpcd index is used for sorting the particles
+    // into cell, more on collision module.
     int *d_index;
-    cudaMalloc((void**)&d_x, sizeof(double) * N);   cudaMalloc((void**)&d_y, sizeof(double) * N);   cudaMalloc((void**)&d_z, sizeof(double) * N);
-    cudaMalloc((void**)&d_vx, sizeof(double) * N);  cudaMalloc((void**)&d_vy, sizeof(double) * N);  cudaMalloc((void**)&d_vz, sizeof(double) * N);
     cudaMalloc((void**)&d_index, sizeof(int) *N);
     
-    //Allocate device memory for box attributes:
+    // Allocate device memory for box attributes,
+    // d_L is a copy of 
     double *d_L, *d_r;   
     cudaMalloc((void**)&d_L, sizeof(double) *3);
-    cudaMalloc((void**)&d_r, sizeof(double) *3);
+    cudaMalloc((void**)&d_r, sizeof(double) *3); 
     
     // Allocate device memory for cells:
     double *d_ux , *d_uy , *d_uz;
