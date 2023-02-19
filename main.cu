@@ -1,8 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <cuda.h>
-#include <curand.h>
-#include <curand_kernel.h>
 #include <iostream>
 #include <cmath>
 #include <fstream>
@@ -10,7 +7,12 @@
 #include <vector>
 #include <random>
 #include <exception>
-#include<unistd.h>
+#include <unistd.h>
+
+#include <cuda.h>
+#include <curand.h>
+#include <curand_kernel.h>
+
 #include "mpcd_macro.cuh"
 #include "LEBC.cuh"
 #include "reduction_sum.cuh"
@@ -23,6 +25,7 @@
 #include "md_analyser.cuh"
 #include "begining.cuh"
 #include "logging.cuh"
+
 int main(int argc, const char* argv[])
 {
     //Check for number of parsed argument:
@@ -57,16 +60,19 @@ int main(int argc, const char* argv[])
 
     // Setting some constarint based on parsed argument  
     double ux =shear_rate * L[2];
-    int Nc = L[0]*L[1]*L[2];
-    int N =density* Nc;
-    int Nmd = n_md * m_md;
+    int Nc = L[0] * L[1] * L[2];            // Number of cells
+    int N =density * Nc;                    // Number of MPCD particles
+    int Nmd = n_md * m_md;                  // Number of MD particles
+
+    // Setting the number of grid for parallel simulation,
+    // It can be optimised based on GPU attributes, I did not care much about it!
     int grid_size = ((N + blockSize) / blockSize);
     
      // Random generator
      curandGenerator_t gen;
      curandCreateGenerator(&gen, 
          CURAND_RNG_PSEUDO_DEFAULT);
-     // See=tting seed for the simulation
+     // Setting seed for the simulation
      /* !NEVER EVER CHANGE THIS PART! */
      curandSetPseudoRandomGeneratorSeed(gen, 
          4294967296ULL^time(NULL));
@@ -76,60 +82,99 @@ int main(int argc, const char* argv[])
      setup_kernel<<<grid_size, blockSize>>>(time(NULL), devStates);
     
 
-    // Allocate device memory for mpcd particle, position and velocity:
-    double *d_x, *d_vx , *d_y , *d_vy , *d_z , *d_vz;
-    
+    /*** Allocate device memory for mpcd particle ***/
+    // position and velocity of MPCD particles:
+    double *d_x, *d_y , *d_z;
     cudaMalloc((void**)&d_x, sizeof(double) * N);   
     cudaMalloc((void**)&d_y, sizeof(double) * N);   
     cudaMalloc((void**)&d_z, sizeof(double) * N);
+    double *d_vx , *d_vy , *d_vz;
     cudaMalloc((void**)&d_vx, sizeof(double) * N);  
     cudaMalloc((void**)&d_vy, sizeof(double) * N);  
     cudaMalloc((void**)&d_vz, sizeof(double) * N);
 
-    // The mpcd index is used for sorting the particles
+    // The mpcd index is used for sorting the particles,
     // into cell, more on collision module.
     int *d_index;
-    cudaMalloc((void**)&d_index, sizeof(int) *N);
+    cudaMalloc((void**)&d_index, sizeof(int) * N);
     
-    // Allocate device memory for box attributes,
+    /*** Allocate device memory for box attributes ***/
     // d_L is a copy of box dimention in the GPU.
     // d_r is a ranfom vector for grid shifting.
     double *d_L, *d_r;   
     cudaMalloc((void**)&d_L, sizeof(double) *3);
     cudaMalloc((void**)&d_r, sizeof(double) *3); 
     
-    // Allocate device memory for cells:
+    // Allocate device memory for cells, 
+    // d_u is for the mean momentum of cells
     double *d_ux , *d_uy , *d_uz;
+    cudaMalloc((void**)&d_ux, sizeof(double) * Nc);
+    cudaMalloc((void**)&d_uy, sizeof(double) * Nc);
+    cudaMalloc((void**)&d_uz, sizeof(double) * Nc);
+    
+    // d_n is for saving number of MPCD particle in a cell
+    // (important for the thermostat)
+    // d_m is for saving the whole mass stored in each cell
+    // (important for computing the mean momentum)
     int  *d_n, *d_m;
-    cudaMalloc((void**)&d_ux, sizeof(double) * Nc); cudaMalloc((void**)&d_uy, sizeof(double) * Nc); cudaMalloc((void**)&d_uz, sizeof(double) * Nc);
-    cudaMalloc((void**)&d_n, sizeof(int) * Nc);     cudaMalloc((void**)&d_m, sizeof(int) * Nc);
-    //Allocate device memory for rotating angles and matrix:
+    cudaMalloc((void**)&d_n, sizeof(int) * Nc);     
+    cudaMalloc((void**)&d_m, sizeof(int) * Nc);
+
+    // The random angles attribated for each cell for Rotation step: 
     double *d_phi , *d_theta,*d_rot;
-    cudaMalloc((void**)&d_phi, sizeof(double) * Nc);    cudaMalloc((void**)&d_theta , sizeof(double) *Nc);  cudaMalloc((void**)&d_rot, sizeof(double) * Nc *9);
+    cudaMalloc((void**)&d_phi, sizeof(double) * Nc);    
+    cudaMalloc((void**)&d_theta, sizeof(double) * Nc);  
+
+    // The rotation matrix of the cell:
+    cudaMalloc((void**)&d_rot, sizeof(double) * Nc * 9);
 
     //Allocate device memory for cell level thermostat atributes:
     double* d_e, *d_scalefactor;
-    cudaMalloc((void**)&d_e , sizeof(double) * Nc);
-    cudaMalloc((void**)&d_scalefactor , sizeof(double) * Nc);
+    cudaMalloc((void**)&d_e , sizeof(double) * Nc);             //kinetic energy of the cell particles.
+    cudaMalloc((void**)&d_scalefactor, sizeof(double) * Nc);    // scale factor to set the velocities distibuation
+                                                                // to a desired gamma distribuation
 
-    //Allocate device memory for md particle:
-    double *d_mdX, *d_mdY, *d_mdZ, *d_mdVx, *d_mdVy , *d_mdVz, *d_mdAx , *d_mdAy, *d_mdAz;
+    /*** Allocate device memory for md particle ***/
+    /// postions, velocity, and acceleration:
+    double *d_mdX, *d_mdY, *d_mdZ;
+    cudaMalloc((void**)&d_mdX, sizeof(double) * Nmd);    
+    cudaMalloc((void**)&d_mdY, sizeof(double) * Nmd);    
+    cudaMalloc((void**)&d_mdZ, sizeof(double) * Nmd);
+    double *d_mdVx, *d_mdVy, *d_mdVz;
+    cudaMalloc((void**)&d_mdVx, sizeof(double) * Nmd);   
+    cudaMalloc((void**)&d_mdVy, sizeof(double) * Nmd);   
+    cudaMalloc((void**)&d_mdVz, sizeof(double) * Nmd);
+    double *d_mdAx, *d_mdAy, *d_mdAz;
+    cudaMalloc((void**)&d_mdAx, sizeof(double) * Nmd);   
+    cudaMalloc((void**)&d_mdAy, sizeof(double) * Nmd);   
+    cudaMalloc((void**)&d_mdAz, sizeof(double) * Nmd);
+    // This index will be used for sorting the MD particle in to the cells:
     int *d_mdIndex;
-    cudaMalloc((void**)&d_mdX, sizeof(double) * Nmd);    cudaMalloc((void**)&d_mdY, sizeof(double) * Nmd);    cudaMalloc((void**)&d_mdZ, sizeof(double) * Nmd);
-    cudaMalloc((void**)&d_mdVx, sizeof(double) * Nmd);   cudaMalloc((void**)&d_mdVy, sizeof(double) * Nmd);   cudaMalloc((void**)&d_mdVz, sizeof(double) * Nmd);
-    cudaMalloc((void**)&d_mdAx, sizeof(double) * Nmd);   cudaMalloc((void**)&d_mdAy, sizeof(double) * Nmd);   cudaMalloc((void**)&d_mdAz, sizeof(double) * Nmd);
     cudaMalloc((void**)&d_mdIndex, sizeof(int) * Nmd);
-    ///////////////NEW MD attributes:
+    // This attribute, is for matrix of polymer interaction in each direction
     double *md_Fx_holder , *md_Fy_holder , *md_Fz_holder;
-    cudaMalloc((void**)&md_Fx_holder, sizeof(double) * Nmd *(Nmd ));    cudaMalloc((void**)&md_Fy_holder, sizeof(double) * Nmd *(Nmd ));    cudaMalloc((void**)&md_Fz_holder, sizeof(double) * Nmd *(Nmd));
+    cudaMalloc((void**)&md_Fx_holder, sizeof(double) * Nmd * Nmd);    
+    cudaMalloc((void**)&md_Fy_holder, sizeof(double) * Nmd * Nmd);    
+    cudaMalloc((void**)&md_Fz_holder, sizeof(double) * Nmd * Nmd);
+    // These attributes can be changed and removed.
+    // I know it is the worst way to compute force between particles,
+    // But it is bugless and it does not affect my running speed much!
+    // If you ever wanted to simulate a system with more MD particles,
+    // You should modify this part!
     
-    if (TIME ==0)start_simulation(basename, simuationtime , swapsize ,d_L, d_mdX , d_mdY , d_mdZ,
-    d_mdVx , d_mdVy , d_mdVz , d_mdAx , d_mdAy , d_mdAz , md_Fx_holder, md_Fy_holder,md_Fz_holder,
-     d_x , d_y , d_z , d_vx , d_vy , d_vz, gen , grid_size);
-    else restarting_simulation(basename , inputfile , simuationtime , swapsize ,d_L, d_mdX , d_mdY , d_mdZ,
+    if (TIME ==0)
+    {
+        start_simulation(basename, simuationtime , swapsize ,d_L, d_mdX , d_mdY , d_mdZ,
+                         d_mdVx , d_mdVy , d_mdVz , d_mdAx , d_mdAy , d_mdAz ,
+                         md_Fx_holder, md_Fy_holder, md_Fz_holder,
+                         d_x , d_y , d_z , d_vx , d_vy , d_vz, gen , grid_size);
+    }
+    else 
+    {
+        restarting_simulation(basename , inputfile , simuationtime , swapsize ,d_L, d_mdX , d_mdY , d_mdZ,
     d_mdVx , d_mdVy , d_mdVz , d_mdAx , d_mdAy , d_mdAz , md_Fx_holder, md_Fy_holder,md_Fz_holder,
      d_x , d_y , d_z , d_vx , d_vy , d_vz, ux , N , Nmd , TIME , grid_size);
-    
+    }
     double real_time = TIME;
     int T =simuationtime/swapsize +TIME/swapsize;
     int delta = h_mpcd / h_md;
