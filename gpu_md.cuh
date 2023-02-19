@@ -9,9 +9,15 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
     int Nmd = n * m;
     double *mdX, *mdY, *mdZ, *mdVx, *mdVy , *mdVz, *mdAx , *mdAy, *mdAz;
     //host allocation:
-    mdX = (double*)malloc(sizeof(double) * Nmd);  mdY = (double*)malloc(sizeof(double) * Nmd);  mdZ = (double*)malloc(sizeof(double) * Nmd);
-    mdVx = (double*)malloc(sizeof(double) * Nmd); mdVy = (double*)malloc(sizeof(double) * Nmd); mdVz = (double*)malloc(sizeof(double) * Nmd);
-    mdAx = (double*)malloc(sizeof(double) * Nmd); mdAy = (double*)malloc(sizeof(double) * Nmd); mdAz = (double*)malloc(sizeof(double) * Nmd);
+    mdX = (double*)malloc(sizeof(double) * Nmd);  
+    mdY = (double*)malloc(sizeof(double) * Nmd);  
+    mdZ = (double*)malloc(sizeof(double) * Nmd);
+    mdVx = (double*)malloc(sizeof(double) * Nmd); 
+    mdVy = (double*)malloc(sizeof(double) * Nmd); 
+    mdVz = (double*)malloc(sizeof(double) * Nmd);
+    mdAx = (double*)malloc(sizeof(double) * Nmd); 
+    mdAy = (double*)malloc(sizeof(double) * Nmd); 
+    mdAz = (double*)malloc(sizeof(double) * Nmd);
     std::normal_distribution<double> normaldistribution(0, 0.44);
     double theta = 4 * M_PI_2 / m;
     double r=m/(4 * M_PI_2);
@@ -51,7 +57,7 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
             }   
             xx[0]+=1.2*r;
         }
-    }            std::cout<<"fuck"<<std::endl;
+    }            
     if (topology == 2)
     {
         for (unsigned int j = 0 ; j< n ; j++)
@@ -77,7 +83,7 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
 
             
             }
-            std::cout<<"hi"<<std::endl;
+            
             xx[0]+=(2*r+1) ;
         }
     }   
