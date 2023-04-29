@@ -345,17 +345,7 @@ __host__ void MD_streaming(double *d_mdX, double *d_mdY, double *d_mdZ,
         gpuErrchk( cudaDeviceSynchronize() );
 
         real_time += h_md;
-/*
-        double *mdX, *mdY, *mdZ, *mdVx, *mdVy , *mdVz, *mdAx , *mdAy, *mdAz;
-        //host allocation:
-        mdX = (double*)malloc(sizeof(double) * Nmd);  mdY = (double*)malloc(sizeof(double) * Nmd);  mdZ = (double*)malloc(sizeof(double) * Nmd);
-        mdVx = (double*)malloc(sizeof(double) * Nmd); mdVy = (double*)malloc(sizeof(double) * Nmd); mdVz = (double*)malloc(sizeof(double) * Nmd);
-        cudaMemcpy(mdX , d_mdX, Nmd*sizeof(double), cudaMemcpyDeviceToHost);   cudaMemcpy(mdY , d_mdY, Nmd*sizeof(double), cudaMemcpyDeviceToHost);   cudaMemcpy(mdZ , d_mdZ, Nmd*sizeof(double), cudaMemcpyDeviceToHost);
-        cudaMemcpy(mdVx , d_mdVx, Nmd*sizeof(double), cudaMemcpyDeviceToHost);   cudaMemcpy(mdVy , d_mdVy, Nmd*sizeof(double), cudaMemcpyDeviceToHost);   cudaMemcpy(mdVz , d_mdVz, Nmd*sizeof(double), cudaMemcpyDeviceToHost);
-        std::cout<<potential(Nmd , mdX , mdY , mdZ , L , ux)+kinetinc(density,Nmd , mdVx , mdVy ,mdVz)<<std::endl;
-        free(mdX);
-        free(mdY);
-        free(mdZ);*/
+
 
         
     }
