@@ -89,29 +89,41 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
     }   
     
 
-    double px =0 , py =0 ,pz =0;
-    for (unsigned int i =0 ; i<Nmd ; i++)
-    {
-        px+=mdVx[i] ; 
-        py+=mdVy[i] ; 
-        pz+=mdVz[i] ;
-    }
+        double px =0 , py =0 ,pz =0;
+        for (unsigned int i =0 ; i<Nmd ; i++)
+        {
+            px+=mdVx[i] ; 
+            py+=mdVy[i] ; 
+            pz+=mdVz[i] ;
+        }
 
-    for (unsigned int i =0 ; i<Nmd ; i++)
-    {
-        mdVx[i]-=px/Nmd ;
-        mdVy[i]-=py/Nmd ;
-        mdVz[i]-=pz/Nmd ;
-    }
-    cudaMemcpy(d_mdX ,mdX, Nmd*sizeof(double), cudaMemcpyHostToDevice);   cudaMemcpy(d_mdY ,mdY, Nmd*sizeof(double), cudaMemcpyHostToDevice);   cudaMemcpy(d_mdZ ,mdZ, Nmd*sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_mdVx ,mdVx, Nmd*sizeof(double), cudaMemcpyHostToDevice); cudaMemcpy(d_mdVy ,mdVy, Nmd*sizeof(double), cudaMemcpyHostToDevice); cudaMemcpy(d_mdVz ,mdVz, Nmd*sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_mdAx ,mdAx, Nmd*sizeof(double), cudaMemcpyHostToDevice); cudaMemcpy(d_mdAy ,mdAy, Nmd*sizeof(double), cudaMemcpyHostToDevice); cudaMemcpy(d_mdAz ,mdAz, Nmd*sizeof(double), cudaMemcpyHostToDevice);
+        for (unsigned int i =0 ; i<Nmd ; i++)
+        {
+            mdVx[i]-=px/Nmd ;
+            mdVy[i]-=py/Nmd ;
+            mdVz[i]-=pz/Nmd ;
+        }
+    cudaMemcpy(d_mdX ,mdX, Nmd*sizeof(double), cudaMemcpyHostToDevice);   
+    cudaMemcpy(d_mdY ,mdY, Nmd*sizeof(double), cudaMemcpyHostToDevice);   
+    cudaMemcpy(d_mdZ ,mdZ, Nmd*sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mdVx ,mdVx, Nmd*sizeof(double), cudaMemcpyHostToDevice); 
+    cudaMemcpy(d_mdVy ,mdVy, Nmd*sizeof(double), cudaMemcpyHostToDevice); 
+    cudaMemcpy(d_mdVz ,mdVz, Nmd*sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mdAx ,mdAx, Nmd*sizeof(double), cudaMemcpyHostToDevice); 
+    cudaMemcpy(d_mdAy ,mdAy, Nmd*sizeof(double), cudaMemcpyHostToDevice); 
+    cudaMemcpy(d_mdAz ,mdAz, Nmd*sizeof(double), cudaMemcpyHostToDevice);
 
 
 
-    free(mdX);    free(mdY);    free(mdZ);
-    free(mdVx);   free(mdVy);   free(mdVz);
-    free(mdAx);   free(mdAy);   free(mdAz);
+    free(mdX);    
+    free(mdY);    
+    free(mdZ);
+    free(mdVx);   
+    free(mdVy);   
+    free(mdVz);
+    free(mdAx);   
+    free(mdAy);   
+    free(mdAz);
 
 }
 
