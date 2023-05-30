@@ -7,6 +7,10 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
  double *d_L, double ux, double xx[3], int n, int m, int topology, int mass)
 {
     int Nmd = n * m;
+    if (topology == 2) //Topology 2 corresponds to linear topology
+    {
+        Nmd = n;
+    }
     double *mdX, *mdY, *mdZ, *mdVx, *mdVy , *mdVz, *mdAx , *mdAy, *mdAz;
     //host allocation:
     mdX = (double*)malloc(sizeof(double) * Nmd);  
@@ -19,16 +23,35 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
     mdAy = (double*)malloc(sizeof(double) * Nmd); 
     mdAz = (double*)malloc(sizeof(double) * Nmd);
     std::normal_distribution<double> normaldistribution(0, 0.44);
-    double theta = 4 * M_PI_2 / m;
-    double r=m/(4 * M_PI_2);
+    if (topology < 2)
+    {
+        double theta = 4 * M_PI_2 / m;
+        double r=m/(4 * M_PI_2);
+    }
+    if (topology == 2)
+    {
+        for (unsigned int i = 0 ; i< n ; i++)
+        {
+                
+            mdAx[i]=0;
+            mdAy[i]=0;
+            mdAz[i]=0;
+            //monomer[i].init(kT ,box, mass);
+            mdVx[i] = normaldistribution(generator);
+            mdVy[i] = normaldistribution(generator);
+            mdVz[i] = normaldistribution(generator);
+            mdX[i]  = i* 1.5;
+            mdY[i]  = 0;
+            mdZ[i]  = 0;
+        }   
+            
+    }
     if (topology == 1)
     {
         for (unsigned int j = 0 ; j< n ; j++)
-        {
-            
+        { 
             for (unsigned int i =0 ; i<m ; i++)
             {
-                
                 mdAx[i+j*m]=0;
                 mdAy[i+j*m]=0;
                 mdAz[i+j*m]=0;
@@ -51,9 +74,7 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
                     //monomer[i].x[2]  = xx[2];
                     mdY[i+j*m]  = xx[1];
 
-                }
-
-            
+                }            
             }   
             xx[0]+=1.2*r;
         }
