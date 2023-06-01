@@ -236,6 +236,20 @@ double *L,int size , double ux, int mass, double real_time, int m , int topology
         }
         
         //FENE:
+
+        if (topology == 0)
+        {
+            if (ID2 - ID1 == 1)
+            {
+                f -= 30/(1 - r_sqr/2.25)
+            }
+            if (ID1 - ID2 == 1)
+            {
+                f -= 30/(1 - r_sqr/2.25)
+            }
+        }
+        
+        //FENE:
         
         if (topology == 1)
         {
