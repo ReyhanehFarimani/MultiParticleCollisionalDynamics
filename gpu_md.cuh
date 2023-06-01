@@ -7,10 +7,6 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
  double *d_L, double ux, double xx[3], int n, int m, int topology, int mass)
 {
     int Nmd = n * m;
-    if (topology == 0) //Topology 0 corresponds to linear topology
-    {
-        Nmd = n;
-    }
     double *mdX, *mdY, *mdZ, *mdVx, *mdVy , *mdVz, *mdAx , *mdAy, *mdAz;
     //host allocation:
     mdX = (double*)malloc(sizeof(double) * Nmd);  
@@ -30,9 +26,9 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
         theta = 4 * M_PI_2 / m;
         r=m/(4 * M_PI_2);
     }
-    if (topology == 2)
+    if (topology == 0)
     {
-        for (unsigned int i = 0 ; i< n ; i++)
+        for (unsigned int i = 0 ; i<Nmd ; i++)
         {
                 
             mdAx[i]=0;
@@ -42,7 +38,7 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
             mdVx[i] = normaldistribution(generator);
             mdVy[i] = normaldistribution(generator);
             mdVz[i] = normaldistribution(generator);
-            mdX[i]  = i* 1.5;
+            mdX[i]  = i;
             mdY[i]  = 0;
             mdZ[i]  = 0;
         }   
