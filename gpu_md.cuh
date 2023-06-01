@@ -7,7 +7,7 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
  double *d_L, double ux, double xx[3], int n, int m, int topology, int mass)
 {
     int Nmd = n * m;
-    if (topology == 2) //Topology 2 corresponds to linear topology
+    if (topology == 0) //Topology 0 corresponds to linear topology
     {
         Nmd = n;
     }
@@ -23,10 +23,12 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
     mdAy = (double*)malloc(sizeof(double) * Nmd); 
     mdAz = (double*)malloc(sizeof(double) * Nmd);
     std::normal_distribution<double> normaldistribution(0, 0.44);
+    double theta;
+    double r;
     if (topology < 2)
     {
-        double theta = 4 * M_PI_2 / m;
-        double r=m/(4 * M_PI_2);
+        theta = 4 * M_PI_2 / m;
+        r=m/(4 * M_PI_2);
     }
     if (topology == 2)
     {
