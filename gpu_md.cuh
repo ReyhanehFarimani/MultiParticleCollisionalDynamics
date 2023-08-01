@@ -21,12 +21,9 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
     std::normal_distribution<double> normaldistribution(0, 0.44);
     double theta;
     double r;
-    if (topology < 2)
-    {
-        theta = 4 * M_PI_2 / m;
-        r=m/(4 * M_PI_2);
-    }
-    if (topology == 0)
+    theta = 4 * M_PI_2 / m;
+    r=m/(4 * M_PI_2);
+    if (topology == 0) //linear polymer topology
     {
         for (unsigned int i = 0 ; i<Nmd ; i++)
         {
@@ -44,7 +41,7 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
         }   
             
     }
-    if (topology == 1)
+    if (topology == 1) //poly[2]catnane topology
     {
         for (unsigned int j = 0 ; j< n ; j++)
         { 
@@ -77,7 +74,7 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
             xx[0]+=1.2*r;
         }
     }            
-    if (topology == 2)
+    if (topology == 2) //bonded ring topology
     {
         for (unsigned int j = 0 ; j< n ; j++)
         {
@@ -105,7 +102,37 @@ double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
             
             xx[0]+=(2*r+1) ;
         }
-    }   
+    } 
+    
+    if (topology == 3) //physically bonded ring topology
+    {
+        for (unsigned int j = 0 ; j< n ; j++)
+        {
+            
+            for (unsigned int i =0 ; i<m ; i++)
+            {
+                
+                mdAx[i+j*m]=0;
+                mdAy[i+j*m]=0;
+                mdAz[i+j*m]=0;
+                //monomer[i].init(kT ,box, mass);
+                mdVx[i+j*m] = normaldistribution(generator);
+                mdVy[i+j*m] = normaldistribution(generator);
+                mdVz[i+j*m] = normaldistribution(generator);
+                //monomer[i].x[0]  = xx[0] + r * sin(i *theta);
+                mdX[i+j*m]  = xx[0] + r * sin(i *theta);
+                //monomer[i].x[1]  = xx[1] + r * cos(i *theta);
+
+                mdY[i+j*m]  = xx[1] + r * cos(i *theta);
+                //monomer[i].x[2]  = xx[2];
+                mdZ[i+j*m]  = xx[2];
+
+            
+            }
+            
+            xx[0]+=(2*r+1) ;
+        }
+    }
     
 
         double px =0 , py =0 ,pz =0;
