@@ -336,12 +336,12 @@ double *L,int size , double ux, int mass, double real_time, int m , int topology
             if (ID1==int(m/4) && ID2 ==m+int(3*m/4))
             {
                 
-                f -= 2 * 2425.911 * 0.0862* exp(-0.0862*(r_sqr^0.5 + 0.0183)) * (1 - exp(-0.0862*(r_sqr^0.5 + 0.0183)));
+                f -= 2 * 2425.911 * 0.0862* exp(-0.0862*(sqrt(r_sqr) + 0.0183)) * (1 - exp(-0.0862*(sqrt(r_sqr) + 0.0183)));
             }
                 
             if (ID2==int(m/4) && ID1 ==m+int(3*m/4))
             {
-                f -= 2 * 2425.911 * 0.0862* exp(-0.0862*(r_sqr^0.5 + 0.0183)) * (1 - exp(-0.0862*(r_sqr^0.5 + 0.0183)));
+                f -= 2 * 2425.911 * 0.0862* exp(-0.0862*(sqrt(r_sqr) + 0.0183)) * (1 - exp(-0.0862*(sqrt(r_sqr) + 0.0183)));
             }
         }
         f/=mass;
