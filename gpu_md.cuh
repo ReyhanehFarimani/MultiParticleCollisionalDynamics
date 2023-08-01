@@ -317,6 +317,34 @@ double *L,int size , double ux, int mass, double real_time, int m , int topology
                 f -= 30/(1 - r_sqr/2.25);
             }
         }
+
+        if (topology == 3)
+        {
+            if (int(ID1/m) == int(ID2/m))
+            {
+                if( ID2 - ID1 == 1 || ID2 - ID1 == m-1 ) 
+                {
+                    f -= 30/(1 - r_sqr/2.25);
+                }
+
+                if( ID1 - ID2 == 1 || ID1 - ID2 == m-1 ) 
+                {
+                    f -= 30/(1 - r_sqr/2.25);
+                }
+            }
+            
+            if (ID1==int(m/4) && ID2 ==m+int(3*m/4))
+            {
+                double exp_cnst = exp(-0.0862*(sqrt(r_sqr) + 0.0183));
+                f -= 2 * 2425.911 * 0.0862* exp_cnst * (1 - exp_cnst);
+            }
+                
+            if (ID2==int(m/4) && ID1 ==m+int(3*m/4))
+            {
+                double exp_cnst = exp(-0.0862*(sqrt(r_sqr) + 0.0183));
+                f -= 2 * 2425.911 * 0.0862* exp_cnst * (1 - exp_cnst);
+            }
+        }
         f/=mass;
 
         fx[tid] = f * r[0] ;
