@@ -138,6 +138,6 @@ int N, int Nmd, int last_step, int grid_size)
     reset_vector_to_zero<<<grid_size,blockSize>>>(d_mdAx, d_mdAy, d_mdAz, Nmd);
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );
-    calc_accelaration(d_mdX , d_mdY, d_mdZ , d_Fx_holder , d_Fy_holder , d_Fz_holder , d_mdAx , d_mdAy , d_mdAz ,d_L , Nmd ,m_md , topology, ux ,h_md, grid_size);
+    calc_accelaration(d_mdX , d_mdY, d_mdZ , d_Fx_holder , d_Fy_holder , d_Fz_holder , d_mdAx , d_mdAy , d_mdAz ,d_L , Nmd ,m_md , topology, ux ,h_md, grid_size, 1);
     
 }
