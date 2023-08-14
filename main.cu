@@ -55,15 +55,19 @@ int main(int argc, const char* argv[])
     swapsize = atoi(argv[12]);              // Output interval
     simuationtime = atoi(argv[13]);         // Final simulation step count
     TIME = atoi(argv[14]);                  // Starting time 
-    topology = atoi(argv[15]);              // System topology 1 is a poly[n]catenane
+    topology = atoi(argv[15]);              // System topology 
+                                            // 0 for linear.
+                                            // 1 is a poly[n]catenane.
                                             // 2 is the bonded ring.
-
+                                            // 3 for the Morse bonded rings.
+    int Morse_Potential_variable = 1        // This is added for deattaching the rings if their distance
+                                            // is more than a treshould like 2\sigma.       
     // Setting some constarint based on parsed argument  
     double ux =shear_rate * L[2];
     int Nc = L[0] * L[1] * L[2];            // Number of cells
     int N =density * Nc;                    // Number of MPCD particles
     int Nmd = n_md * m_md;                  // Number of MD particles
-
+    
     // Setting the number of grid for parallel simulation,
     // It can be optimised based on GPU attributes, I did not care much about it!
     int grid_size = ((N + blockSize) / blockSize);
