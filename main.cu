@@ -60,7 +60,7 @@ int main(int argc, const char* argv[])
                                             // 1 is a poly[n]catenane.
                                             // 2 is the bonded ring.
                                             // 3 for the Morse bonded rings.
-    int Morse_Potential_variable = 1        // This is added for deattaching the rings if their distance
+    int Morse_Potential_variable = 1;       // This is added for deattaching the rings if their distance
                                             // is more than a treshould like 2\sigma.       
     // Setting some constarint based on parsed argument  
     double ux =shear_rate * L[2];

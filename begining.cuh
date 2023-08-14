@@ -106,7 +106,7 @@ curandGenerator_t gen, int grid_size)
     double pos[3] ={0,0,0};
     //initMD:
     initMD(d_mdX, d_mdY , d_mdZ , d_mdVx , d_mdVy , d_mdVz , d_mdAx , d_mdAy , d_mdAz , d_Fx_holder , d_Fy_holder , d_Fz_holder , d_L , ux ,pos , n_md , m_md , topology , density);
-    calc_accelaration(d_mdX , d_mdY, d_mdZ , d_Fx_holder , d_Fy_holder , d_Fz_holder , d_mdAx , d_mdAy , d_mdAz ,d_L , Nmd , n_md ,topology ,  ux ,h_md, grid_size);
+    calc_accelaration(d_mdX , d_mdY, d_mdZ , d_Fx_holder , d_Fy_holder , d_Fz_holder , d_mdAx , d_mdAy , d_mdAz ,d_L , Nmd , n_md ,topology ,  ux ,h_md, grid_size, 1);
     cudaFree(d_tmp);
 
 
