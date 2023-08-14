@@ -335,7 +335,7 @@ double *L,int size , double ux, int mass, double real_time, int m , int topology
             
             if (ID1==int(m/4) && ID2 ==m+int(3*m/4))
             {
-                if (r_sqrt > 1)
+                if (r_sqr > 1)
                 {
                     Morse_Potential_variable = 0;
                 }
@@ -349,7 +349,7 @@ double *L,int size , double ux, int mass, double real_time, int m , int topology
                 
             if (ID2==int(m/4) && ID1 ==m+int(3*m/4))
             {
-                if (r_sqrt > 1)
+                if (r_sqr > 1)
                 {
                     Morse_Potential_variable = 0;
                 }
@@ -381,7 +381,7 @@ double *Fx , double *Fy , double *Fz,
 double *Ax , double *Ay , double *Az,
 double *L,int size ,int m ,int topology, double ux,double real_time, int grid_size)
 {
-    nb_b_interaction<<<grid_size,blockSize>>>(x , y , z, Fx , Fy , Fz ,L , size , ux,density, real_time , m , topology, Morse_Potential_variable);
+    nb_b_interaction<<<grid_size,blockSize>>>(x , y , z, Fx , Fy , Fz ,L , size , ux,density, real_time , m , topology);
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );
     sum_kernel<<<grid_size,blockSize>>>(Fx ,Fy,Fz, Ax ,Ay, Az, size);
@@ -452,7 +452,7 @@ __host__ void MD_streaming(double *d_mdX, double *d_mdY, double *d_mdZ,
         gpuErrchk( cudaPeekAtLastError() );
         gpuErrchk( cudaDeviceSynchronize() );
         
-        calc_accelaration(d_mdX, d_mdY , d_mdZ , d_Fx , d_Fy , d_Fz , d_mdAx , d_mdAy , d_mdAz, d_L , Nmd ,m_md ,topology, ux ,real_time, grid_size, Morse_Potential_variable);
+        calc_accelaration(d_mdX, d_mdY , d_mdZ , d_Fx , d_Fy , d_Fz , d_mdAx , d_mdAy , d_mdAz, d_L , Nmd ,m_md ,topology, ux ,real_time, grid_size);
         
         
         velocityVerletKernel2<<<grid_size,blockSize>>>(d_mdVx, d_mdVy, d_mdVz, d_mdAx, d_mdAy, d_mdAz, h_md, Nmd);
