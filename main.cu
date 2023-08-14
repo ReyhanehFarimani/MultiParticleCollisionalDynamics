@@ -60,8 +60,7 @@ int main(int argc, const char* argv[])
                                             // 1 is a poly[n]catenane.
                                             // 2 is the bonded ring.
                                             // 3 for the Morse bonded rings.
-    int Morse_Potential_variable = 1;       // This is added for deattaching the rings if their distance
-                                            // is more than a treshould like 2\sigma.       
+         
     // Setting some constarint based on parsed argument  
     double ux =shear_rate * L[2];
     int Nc = L[0] * L[1] * L[2];            // Number of cells
@@ -204,7 +203,7 @@ int main(int argc, const char* argv[])
 
             MD_streaming(d_mdX, d_mdY, d_mdZ, d_mdVx, d_mdVy, d_mdVz,
                          d_mdAx , d_mdAy , d_mdAz ,md_Fx_holder, md_Fy_holder, md_Fz_holder,
-                         h_md , Nmd , density , d_L , ux , grid_size, delta,real_time, Morse_Potential_variable);
+                         h_md , Nmd , density , d_L , ux , grid_size, delta,real_time);
             // xyz_trj(basename + "_force.xyz", d_mdAx, d_mdAy, d_mdAz, Nmd);
             Sort_begin(d_x, d_y, d_z, d_vx, d_index, d_mdX, d_mdY, d_mdZ,
                         d_mdVx, d_mdIndex, ux, d_L, d_r, N, Nmd, real_time, grid_size);

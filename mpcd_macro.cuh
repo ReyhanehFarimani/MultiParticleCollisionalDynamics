@@ -9,6 +9,8 @@ double h_md = 0.001;
 double h_mpcd = 0.1;
 int TIME = 0;
 int topology = 1;
+int Morse_Potential_variable = 1;       // This is added for deattaching the rings if their distance
+                                       // is more than a treshould like 2\sigma.  
 std::default_random_engine generator(time(0));
 std::uniform_real_distribution<float> realdistribution(0, 1);
 static const int blockSize = 512;

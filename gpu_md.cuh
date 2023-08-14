@@ -230,7 +230,7 @@ __global__ void sum_kernel(double *F1 ,double *F2 , double *F3,
 __global__ void nb_b_interaction( 
 double *mdX, double *mdY , double *mdZ ,
 double *fx , double *fy , double *fz, 
-double *L,int size , double ux, int mass, double real_time, int m , int topology, int Morse_Potential_variable)
+double *L,int size , double ux, int mass, double real_time, int m , int topology)
 {
     int size2 = size*(size);
 
@@ -335,14 +335,29 @@ double *L,int size , double ux, int mass, double real_time, int m , int topology
             
             if (ID1==int(m/4) && ID2 ==m+int(3*m/4))
             {
-                double exp_cnst = exp(-0.0862*(sqrt(r_sqr) + 0.0183));
-                f -= 2 * 2425.911 * 0.0862* exp_cnst * (1 - exp_cnst);
+                if (r_sqrt > 1)
+                {
+                    Morse_Potential_variable = 0;
+                }
+                if(Morse_Potential_variable)
+                {
+                    double exp_cnst = exp(-0.0862*(sqrt(r_sqr) + 0.0183));
+                    f -= 2 * 2425.911 * 0.0862* exp_cnst * (1 - exp_cnst);
+                }
+                
             }
                 
             if (ID2==int(m/4) && ID1 ==m+int(3*m/4))
             {
-                double exp_cnst = exp(-0.0862*(sqrt(r_sqr) + 0.0183));
-                f -= 2 * 2425.911 * 0.0862* exp_cnst * (1 - exp_cnst);
+                if (r_sqrt > 1)
+                {
+                    Morse_Potential_variable = 0;
+                }
+                if(Morse_Potential_variable)
+                {
+                    double exp_cnst = exp(-0.0862*(sqrt(r_sqr) + 0.0183));
+                    f -= 2 * 2425.911 * 0.0862* exp_cnst * (1 - exp_cnst);
+                }
             }
         }
         f/=mass;
@@ -364,7 +379,7 @@ double *L,int size , double ux, int mass, double real_time, int m , int topology
 __host__ void calc_accelaration( double *x ,double *y , double *z , 
 double *Fx , double *Fy , double *Fz,
 double *Ax , double *Ay , double *Az,
-double *L,int size ,int m ,int topology, double ux,double real_time, int grid_size, int Morse_Potential_variable)
+double *L,int size ,int m ,int topology, double ux,double real_time, int grid_size)
 {
     nb_b_interaction<<<grid_size,blockSize>>>(x , y , z, Fx , Fy , Fz ,L , size , ux,density, real_time , m , topology, Morse_Potential_variable);
     gpuErrchk( cudaPeekAtLastError() );
@@ -422,7 +437,7 @@ __host__ void MD_streaming(double *d_mdX, double *d_mdY, double *d_mdZ,
     double *d_mdVx, double *d_mdVy, double *d_mdVz,
     double *d_mdAx, double *d_mdAy, double *d_mdAz,
     double *d_Fx, double *d_Fy, double *d_Fz,
-    double h_md ,int Nmd, int density, double *d_L ,double ux,int grid_size ,int delta, double real_time, int Morse_Potential_variable)
+    double h_md ,int Nmd, int density, double *d_L ,double ux,int grid_size ,int delta, double real_time)
 {
     for (int tt = 0 ; tt < delta ; tt++)
     {
