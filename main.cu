@@ -84,14 +84,11 @@ int main(int argc, const char* argv[])
 
     /*** Allocate device memory for mpcd particle ***/
     // position and velocity of MPCD particles:
-    double *d_x, *d_y , *d_z;
-    cudaMalloc((void**)&d_x, sizeof(double) * N);   
-    cudaMalloc((void**)&d_y, sizeof(double) * N);   
-    cudaMalloc((void**)&d_z, sizeof(double) * N);
-    double *d_vx , *d_vy , *d_vz;
-    cudaMalloc((void**)&d_vx, sizeof(double) * N);  
-    cudaMalloc((void**)&d_vy, sizeof(double) * N);  
-    cudaMalloc((void**)&d_vz, sizeof(double) * N);
+    double *d_r_mpcd;
+    cudaMalloc((void**)&d_r_mpcd, sizeof(double) * N * 3);   
+
+    double *d_v_mpcd;
+    cudaMalloc((void**)&d_v_mpcd, sizeof(double) * N * 3);
 
     // The mpcd index is used for sorting the particles,
     // into cell, more on collision module.
@@ -107,10 +104,8 @@ int main(int argc, const char* argv[])
     
     // Allocate device memory for cells, 
     // d_u is for the mean momentum of cells
-    double *d_ux , *d_uy , *d_uz;
-    cudaMalloc((void**)&d_ux, sizeof(double) * Nc);
-    cudaMalloc((void**)&d_uy, sizeof(double) * Nc);
-    cudaMalloc((void**)&d_uz, sizeof(double) * Nc);
+    double *d_v_cell;
+    cudaMalloc((void**)&d_v_cell, sizeof(double) * Nc * 3);
     
     // d_n is for saving number of MPCD particle in a cell
     // (important for the thermostat)
@@ -170,77 +165,71 @@ int main(int argc, const char* argv[])
         start_simulation(basename, simuationtime, swapsize, d_L, d_mdX, d_mdY, d_mdZ,
                          d_mdVx, d_mdVy, d_mdVz, d_mdAx, d_mdAy, d_mdAz,
                          md_Fx_holder, md_Fy_holder, md_Fz_holder,
-                         d_x, d_y, d_z, d_vx, d_vy, d_vz, gen, grid_size);
+                         d_r_mpcd, d_v_mpcd, gen, grid_size);
     }
     else 
     {
         restarting_simulation(basename, inputfile, simuationtime, swapsize,
                              d_L, d_mdX, d_mdY, d_mdZ, d_mdVx, d_mdVy, d_mdVz,
                              d_mdAx, d_mdAy, d_mdAz, md_Fx_holder, md_Fy_holder, md_Fz_holder,
-                             d_x, d_y, d_z, d_vx, d_vy, d_vz, ux, N, Nmd, TIME, grid_size);
+                             d_r_mpcd, d_v_mpcd, ux, N, Nmd, TIME, grid_size);
     }
 
     /* Setting time for the simulation! */
     double real_time = TIME;                        // It is imprtant for us because of Lees Edwards PBC
     int T =simuationtime/swapsize +TIME/swapsize;   // Computing time for the loop based on logging frequency
     int delta = h_mpcd / h_md;                      // MD step calcilation based on MPCD time loop.  
-    //xyz_trj(basename + "_traj.xyz", d_mdX, d_mdY, d_mdZ, Nmd);
+    
 
-    // Loop based on sampling frequncy"
-    for (int t = TIME/swapsize; t<T; t++)
-    {
-        // Loop for calculation:
-        for (int i =0; i<int(swapsize/h_mpcd); i++)
-        {
-            curandGenerateUniformDouble(gen, d_phi, Nc);
-            curandGenerateUniformDouble(gen, d_theta, Nc);
-            curandGenerateUniformDouble(gen, d_r, 3);
+    // // Loop based on sampling frequncy"
+    // for (int t = TIME/swapsize; t<T; t++)
+    // {
+    //     // Loop for calculation:
+    //     for (int i =0; i<int(swapsize/h_mpcd); i++)
+    //     {
+    //         curandGenerateUniformDouble(gen, d_phi, Nc);
+    //         curandGenerateUniformDouble(gen, d_theta, Nc);
+    //         curandGenerateUniformDouble(gen, d_r, 3);
 
-            MPCD_streaming(d_x, d_y, d_z, d_vx, d_vy, d_vz, h_mpcd, N, grid_size);            
+    //         MPCD_streaming(d_x, d_y, d_z, d_vx, d_vy, d_vz, h_mpcd, N, grid_size);            
 
-            MD_streaming(d_mdX, d_mdY, d_mdZ, d_mdVx, d_mdVy, d_mdVz,
-                         d_mdAx , d_mdAy , d_mdAz ,md_Fx_holder, md_Fy_holder, md_Fz_holder,
-                         h_md , Nmd , density , d_L , ux , grid_size, delta,real_time);
-            // xyz_trj(basename + "_force.xyz", d_mdAx, d_mdAy, d_mdAz, Nmd);
-            Sort_begin(d_x, d_y, d_z, d_vx, d_index, d_mdX, d_mdY, d_mdZ,
-                        d_mdVx, d_mdIndex, ux, d_L, d_r, N, Nmd, real_time, grid_size);
+    //         MD_streaming(d_mdX, d_mdY, d_mdZ, d_mdVx, d_mdVy, d_mdVz,
+    //                      d_mdAx , d_mdAy , d_mdAz ,md_Fx_holder, md_Fy_holder, md_Fz_holder,
+    //                      h_md , Nmd , density , d_L , ux , grid_size, delta,real_time);
+    //         // xyz_trj(basename + "_force.xyz", d_mdAx, d_mdAy, d_mdAz, Nmd);
+    //         Sort_begin(d_x, d_y, d_z, d_vx, d_index, d_mdX, d_mdY, d_mdZ,
+    //                     d_mdVx, d_mdIndex, ux, d_L, d_r, N, Nmd, real_time, grid_size);
 
-            MPCD_MD_collision(d_vx, d_vy, d_vz, d_index, d_mdVx, d_mdVy, d_mdVz,
-                             d_mdIndex, d_ux, d_uy, d_uz, d_e, d_scalefactor, d_n, d_m,
-                             d_rot, d_theta, d_phi, N, Nmd, Nc, devStates, grid_size);
+    //         MPCD_MD_collision(d_vx, d_vy, d_vz, d_index, d_mdVx, d_mdVy, d_mdVz,
+    //                          d_mdIndex, d_ux, d_uy, d_uz, d_e, d_scalefactor, d_n, d_m,
+    //                          d_rot, d_theta, d_phi, N, Nmd, Nc, devStates, grid_size);
             
-            Sort_finish(d_x, d_y, d_z,d_vx, d_index , 
-                         d_mdX, d_mdY, d_mdZ ,d_mdVx, d_mdIndex, ux, 
-                         d_L, d_r, N, Nmd, real_time, grid_size);
+    //         Sort_finish(d_x, d_y, d_z,d_vx, d_index , 
+    //                      d_mdX, d_mdY, d_mdZ ,d_mdVx, d_mdIndex, ux, 
+    //                      d_L, d_r, N, Nmd, real_time, grid_size);
             
-            real_time += h_mpcd;
+    //         real_time += h_mpcd;
                  
 
-        }
-        //logging:
-        logging(basename + "_log.log", real_time, d_mdVx, d_mdVy, d_mdVz,
-                 d_vx, d_vy, d_vz, N, Nmd, grid_size);
-        xyz_trj(basename + "_traj.xyz", d_mdX, d_mdY, d_mdZ, Nmd);
-        xyz_trj(basename + "_vel.xyz", d_mdVx, d_mdVy, d_mdVz, Nmd);
-        xyz_trj(basename + "_force.xyz", d_mdAx, d_mdAy, d_mdAz, Nmd);
+    //     }
+    //     //logging:
+    //     logging(basename + "_log.log", real_time, d_mdVx, d_mdVy, d_mdVz,
+    //              d_vx, d_vy, d_vz, N, Nmd, grid_size);
+    //     xyz_trj(basename + "_traj.xyz", d_mdX, d_mdY, d_mdZ, Nmd);
+    //     xyz_trj(basename + "_vel.xyz", d_mdVx, d_mdVy, d_mdVz, Nmd);
+    //     xyz_trj(basename + "_force.xyz", d_mdAx, d_mdAy, d_mdAz, Nmd);
        
-    }
+    // }
 
 
-    // End of simualtion:
-    md_write_restart_file(basename, d_mdX , d_mdY , d_mdZ , d_mdVx , d_mdVy , d_mdVz , Nmd);
-    mpcd_write_restart_file(basename ,d_x , d_y , d_z , d_vx , d_vy , d_vz , N);
+    // // End of simualtion:
+    // md_write_restart_file(basename, d_mdX , d_mdY , d_mdZ , d_mdVx , d_mdVy , d_mdVz , Nmd);
+    // mpcd_write_restart_file(basename ,d_x , d_y , d_z , d_vx , d_vy , d_vz , N);
 
     // Free memory of the MPCD particles and cells:
-    cudaFree(d_x); 
-    cudaFree(d_y); 
-    cudaFree(d_z);
-    cudaFree(d_vx); 
-    cudaFree(d_vy); 
-    cudaFree(d_vz);
-    cudaFree(d_ux); 
-    cudaFree(d_uy); 
-    cudaFree(d_uz);
+    cudaFree(d_r_mpcd);
+    cudaFree(d_v_mpcd); 
+    cudaFree(d_u_mpcd); 
     cudaFree(d_rot); 
     cudaFree(d_phi); 
     cudaFree(d_theta);

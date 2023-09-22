@@ -1,40 +1,33 @@
-__global__ void kerenlInit(double *x, double*y, double *z,double *vx, double *vy , double *vz, double *L,double px , double py, double pz, int N)
+__global__ void kerenlInit(double *r, double *v, double *L,double px , double py, double pz, int N)
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x ;
     if (tid<N)
     {
-        x[tid] *= L[0];
-        y[tid] *= L[1];
-        z[tid] *= L[2];
-        x[tid] -= L[0]/2;
-        y[tid] -= L[1]/2;
-        z[tid] -= L[2]/2;
-        vx[tid] -= px;
-        vy[tid] -= py;
-        vz[tid] -= pz;
+        r[3 * tid + 0] *= L[0];
+        r[3 * tid + 1] *= L[1];
+        r[3 * tid + 2] *= L[2];
+        r[3 * tid + 0] -= L[0]/2;
+        r[3 * tid + 1] -= L[1]/2;
+        r[3 * tid + 2] -= L[2]/2;
+        v[3 * tid + 0] -= px;
+        v[3 * tid + 1] -= py;
+        v[3 * tid + 2] -= pz;
     }
 
 }
 __host__ void mpcd_init(curandGenerator_t gen,
-double *d_x,
-double *d_y,
-double *d_z,
-double *d_vx,
-double *d_vy,
-double *d_vz,
+double *d_r,
+double *d_v,
 int grid_size,
 int N)
 {
 
         //initialisation postions:
-        curandGenerateUniformDouble(gen, d_x, N);
-        curandGenerateUniformDouble(gen, d_y, N);
-        curandGenerateUniformDouble(gen, d_z, N);
+        curandGenerateUniformDouble(gen, d_r, 3 * N);
         
         //initialisation velocity:
-        curandGenerateNormalDouble(gen, d_vx, N, 0, 1);
-        curandGenerateNormalDouble(gen, d_vy, N, 0, 1);
-        curandGenerateNormalDouble(gen, d_vz, N, 0, 1);
+        // For changing tempreture this part of the code should change
+        curandGenerateNormalDouble(gen, d_v, 3 * N, 0, 1);
 
 }
 __host__ void start_simulation(std::string file_name, int simulationtime , int swapsize , double *d_L,
@@ -42,37 +35,60 @@ double *d_mdX , double *d_mdY , double *d_mdZ,
 double *d_mdVx , double *d_mdVy , double *d_mdVz,
 double *d_mdAx , double *d_mdAy , double *d_mdAz,
 double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
-double *d_x , double *d_y , double *d_z ,
-double *d_vx , double *d_vy , double *d_vz,
+double *d_r_mpcd
+double *d_v_mpcd,
 curandGenerator_t gen, int grid_size)
 {
     std::string log_name = file_name + "_log.log";
     std::string trj_name = file_name + "_traj.xyz";
     std::ofstream log (log_name);
     std::ofstream trj (trj_name);
-    printf( "***WELCOME TO MPCD_MD_LeesEdwards CUDA CODE!***\nBy: Reyhaneh Afghahi Farimani, rhn_a_farimani@yahoo.com. \nThis code comes with a python code to analyse the results.");
-    printf("\ninput system:\nensemble:NVT, thermostat= cell_level_Maxwell_Boltzaman_thermostat, Lx=%i,Ly=%i,Lz=%i,shear_rate=%f,density=%i\n", int(L[0]), int(L[1]),int(L[2]), shear_rate, density);
-    printf( "SHEAR_FLOW is produced using Lees_Edwards Periodic Boundry Condition: shear direction:x , gradiant direction:z , vorticity direction: y\n");
-    if (topology==1)
-        printf("A poly[%i]catenane with %i monomer in each ring is embeded in the MPCD fluid.\n" , n_md , m_md);
-    if (topology==2)
-    printf("A linked[%i]ring with %i monomer in each ring is embeded in the MPCD fluid.\nWarning: the code currently support only linked[2]rings.\n" , n_md , m_md);
-    printf("simulation time = %i, measurments accur every %i step.\n", simuationtime, swapsize);
-    
-
-    log<<"***WELCOME TO MPCD_MD_LeesEdwards CUDA CODE!***\nBy: Reyhaneh Afghahi Farimani, rhn_a_farimani@yahoo.com. \nThis code comes with a python code to analyse the results.";
-    log<< "\ninput system:\nensemble:NVT, thermostat= cell_level_Maxwell_Boltzaman_thermostat, Lx="<<int(L[0])<<",Ly="<<int(L[1])<<",Lz="<<int(L[2])<<",shear_rate="<<shear_rate<<",density="<<density<<std::endl;
-    if (topology==1)
-        log<<"A poly["<<n_md<<"]catenane with "<<m_md<<" monomer in each ring is embeded in the MPCD fluid.\n";
-    if (topology==2)
-        log<<"A linked["<<n_md<<"]ring with "<<m_md<<" monomer in each ring is embeded in the MPCD fluid.\n";
-    log<< "SHEAR_FLOW is produced using Lees_Edwards Periodic Boundry Condition: shear direction:x , gradiant direction:z , vorticity direction: y\n";
-    log<<"simulation time ="<<simulationtime<<", measurments accur every "<<swapsize<<" step.\n" ;
-
     double ux =shear_rate * L[2];
     int Nc = L[0]*L[1]*L[2];
     int N =density* Nc;
     int Nmd = n_md * m_md;
+    printf( "***WELCOME TO MPCD CUDA CODE!***\nBy: Reyhaneh A. Farimani,
+        reyhaneh.afghahi.farimani@univie.ac.at . \n
+            This code comes with a python code to analyse the results***");
+    printf("\ninput system:\nensemble:NVT, 
+        thermostat= cell_level_Maxwell_Boltzaman_thermostat, 
+            Lx=%i,Ly=%i,Lz=%i,shear_rate=%f,density=%i\n", 
+                int(L[0]), int(L[1]),int(L[2]), shear_rate, density);
+    if (ux != 0)
+        printf( "SHEAR_FLOW is produced using Lees_Edwards Periodic Boundry Condition:
+            shear direction:x , gradiant direction:z , vorticity direction: y\n");
+    if (topology == 0)
+    printf(" A linear polymer with %i
+         monomers is embeded in the MPCD fluid.\n", n_md * m_md);
+    if (topology == 1)
+        printf("A poly[%i]catenane with %i
+         monomer in each ring is embeded in the MPCD fluid.\n" , n_md , m_md);
+    if (topology==2)
+    printf("A linked[%i]ring with %i
+         monomer in each ring is embeded in the MPCD fluid.\n
+            Warning: the code currently support only linked[2]rings.\n" , n_md , m_md);
+    printf("simulation time = %i, measurments accur every %i step.\n", simuationtime, swapsize);
+    
+
+    log<<"***WELCOME TO MPCD CUDA CODE!***\nBy: Reyhaneh A. Farimani,
+    reyhaneh.afghahi.farimani@univie.ac.at . \n
+        This code comes with a python code to analyse the results***";
+    log<< "\ninput system:\nensemble:NVT, 
+    thermostat= cell_level_Maxwell_Boltzaman_thermostat, 
+        Lx="<<int(L[0])<<",Ly="<<int(L[1])<<",Lz="<<int(L[2])<<",shear_rate
+            = "<<shear_rate<<",density="<<density<<std::endl;
+    if (topology==1)
+        log<<"A poly["<<n_md<<"]catenane with "<<m_md<<"
+            monomer in each ring is embeded in the MPCD fluid.\n";
+    if (topology==2)
+        log<<"A linked["<<n_md<<"]ring with "<<m_md<<"
+            monomer in each ring is embeded in the MPCD fluid.\n";
+    if (ux != 0)
+        log<< "SHEAR_FLOW is produced using Lees_Edwards Periodic Boundry Condition:
+            shear direction:x , gradiant direction:z , vorticity direction: y\n";
+    log<<"simulation time ="<<simulationtime<<", measurments accur every "<<swapsize<<" step.\n" ;
+
+
 
     //help variable:
     double *d_tmp;
