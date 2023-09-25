@@ -181,45 +181,45 @@ int main(int argc, const char* argv[])
     int delta = h_mpcd / h_md;                      // MD step calcilation based on MPCD time loop.  
     
 
-    // // Loop based on sampling frequncy"
-    // for (int t = TIME/swapsize; t<T; t++)
-    // {
-    //     // Loop for calculation:
-    //     for (int i =0; i<int(swapsize/h_mpcd); i++)
-    //     {
-    //         curandGenerateUniformDouble(gen, d_phi, Nc);
-    //         curandGenerateUniformDouble(gen, d_theta, Nc);
-    //         curandGenerateUniformDouble(gen, d_r, 3);
+    // Loop based on sampling frequncy"
+    for (int t = TIME/swapsize; t<T; t++)
+    {
+        // Loop for calculation:
+        for (int i =0; i<int(swapsize/h_mpcd); i++)
+        {
+            curandGenerateUniformDouble(gen, d_phi, Nc);
+            curandGenerateUniformDouble(gen, d_theta, Nc);
+            curandGenerateUniformDouble(gen, d_r, 3);
 
-    //         MPCD_streaming(d_x, d_y, d_z, d_vx, d_vy, d_vz, h_mpcd, N, grid_size);            
+            // MPCD_streaming(d_x, d_y, d_z, d_vx, d_vy, d_vz, h_mpcd, N, grid_size);            
 
-    //         MD_streaming(d_mdX, d_mdY, d_mdZ, d_mdVx, d_mdVy, d_mdVz,
-    //                      d_mdAx , d_mdAy , d_mdAz ,md_Fx_holder, md_Fy_holder, md_Fz_holder,
-    //                      h_md , Nmd , density , d_L , ux , grid_size, delta,real_time);
-    //         // xyz_trj(basename + "_force.xyz", d_mdAx, d_mdAy, d_mdAz, Nmd);
-    //         Sort_begin(d_x, d_y, d_z, d_vx, d_index, d_mdX, d_mdY, d_mdZ,
-    //                     d_mdVx, d_mdIndex, ux, d_L, d_r, N, Nmd, real_time, grid_size);
+            // MD_streaming(d_mdX, d_mdY, d_mdZ, d_mdVx, d_mdVy, d_mdVz,
+            //              d_mdAx , d_mdAy , d_mdAz ,md_Fx_holder, md_Fy_holder, md_Fz_holder,
+            //              h_md , Nmd , density , d_L , ux , grid_size, delta,real_time);
+            // // xyz_trj(basename + "_force.xyz", d_mdAx, d_mdAy, d_mdAz, Nmd);
+            // Sort_begin(d_x, d_y, d_z, d_vx, d_index, d_mdX, d_mdY, d_mdZ,
+            //             d_mdVx, d_mdIndex, ux, d_L, d_r, N, Nmd, real_time, grid_size);
 
-    //         MPCD_MD_collision(d_vx, d_vy, d_vz, d_index, d_mdVx, d_mdVy, d_mdVz,
-    //                          d_mdIndex, d_ux, d_uy, d_uz, d_e, d_scalefactor, d_n, d_m,
-    //                          d_rot, d_theta, d_phi, N, Nmd, Nc, devStates, grid_size);
+            // MPCD_MD_collision(d_vx, d_vy, d_vz, d_index, d_mdVx, d_mdVy, d_mdVz,
+            //                  d_mdIndex, d_ux, d_uy, d_uz, d_e, d_scalefactor, d_n, d_m,
+            //                  d_rot, d_theta, d_phi, N, Nmd, Nc, devStates, grid_size);
             
-    //         Sort_finish(d_x, d_y, d_z,d_vx, d_index , 
-    //                      d_mdX, d_mdY, d_mdZ ,d_mdVx, d_mdIndex, ux, 
-    //                      d_L, d_r, N, Nmd, real_time, grid_size);
+            // Sort_finish(d_x, d_y, d_z,d_vx, d_index , 
+            //              d_mdX, d_mdY, d_mdZ ,d_mdVx, d_mdIndex, ux, 
+            //              d_L, d_r, N, Nmd, real_time, grid_size);
             
-    //         real_time += h_mpcd;
+            real_time += h_mpcd;
                  
 
-    //     }
-    //     //logging:
-    //     logging(basename + "_log.log", real_time, d_mdVx, d_mdVy, d_mdVz,
-    //              d_vx, d_vy, d_vz, N, Nmd, grid_size);
-    //     xyz_trj(basename + "_traj.xyz", d_mdX, d_mdY, d_mdZ, Nmd);
-    //     xyz_trj(basename + "_vel.xyz", d_mdVx, d_mdVy, d_mdVz, Nmd);
-    //     xyz_trj(basename + "_force.xyz", d_mdAx, d_mdAy, d_mdAz, Nmd);
+        }
+        //logging:
+        logging(basename + "_log.log", real_time, d_mdVx, d_mdVy, d_mdVz,
+                 d_vx, d_vy, d_vz, N, Nmd, grid_size);
+        xyz_trj(basename + "_traj.xyz", d_mdX, d_mdY, d_mdZ, Nmd);
+        xyz_trj(basename + "_vel.xyz", d_mdVx, d_mdVy, d_mdVz, Nmd);
+        xyz_trj(basename + "_force.xyz", d_mdAx, d_mdAy, d_mdAz, Nmd);
        
-    // }
+    }
 
 
     // // End of simualtion:
