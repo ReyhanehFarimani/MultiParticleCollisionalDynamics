@@ -49,45 +49,27 @@ curandGenerator_t gen, int grid_size)
     int Nc = L[0]*L[1]*L[2];
     int N =density* Nc;
     int Nmd = n_md * m_md;
-    printf( "***WELCOME TO MPCD CUDA CODE!***\nBy: Reyhaneh A. Farimani,
-        reyhaneh.afghahi.farimani@univie.ac.at . \n
-            This code comes with a python code to analyse the results***");
-    printf("\ninput system:\nensemble:NVT, 
-        thermostat= cell_level_Maxwell_Boltzaman_thermostat, 
-            Lx=%i,Ly=%i,Lz=%i,shear_rate=%f,density=%i\n", 
-                int(L[0]), int(L[1]),int(L[2]), shear_rate, density);
+    printf( "***WELCOME TO MPCD CUDA CODE!***\nBy: Reyhaneh A. Farimani, reyhaneh.afghahi.farimani@univie.ac.at . \n This code comes with a python code to analyse the results***.");
+    printf("\ninput system:\nensemble:NVT, thermostat= cell_level_Maxwell_Boltzaman_thermostat, Lx=%i,Ly=%i,Lz=%i,shear_rate=%f,density=%i\n", int(L[0]), int(L[1]),int(L[2]), shear_rate, density);
     if (ux != 0)
-        printf( "SHEAR_FLOW is produced using Lees_Edwards Periodic Boundry Condition:
-            shear direction:x , gradiant direction:z , vorticity direction: y\n");
+        printf( "SHEAR_FLOW is produced using Lees_Edwards Periodic Boundry Condition: shear direction:x , gradiant direction:z , vorticity direction: y\n");
     if (topology == 0)
-    printf(" A linear polymer with %i
-         monomers is embeded in the MPCD fluid.\n", n_md * m_md);
+    printf(" A linear polymer with %i monomers is embeded in the MPCD fluid.\n", n_md * m_md);
     if (topology == 1)
-        printf("A poly[%i]catenane with %i
-         monomer in each ring is embeded in the MPCD fluid.\n" , n_md , m_md);
+        printf("A poly[%i]catenane with %i monomer in each ring is embeded in the MPCD fluid.\n" , n_md , m_md);
     if (topology==2)
-    printf("A linked[%i]ring with %i
-         monomer in each ring is embeded in the MPCD fluid.\n
-            Warning: the code currently support only linked[2]rings.\n" , n_md , m_md);
+    printf("A linked[%i]ring with %i monomer in each ring is embeded in the MPCD fluid.\n Warning: the code currently support only linked[2]rings.\n" , n_md , m_md);
     printf("simulation time = %i, measurments accur every %i step.\n", simuationtime, swapsize);
     
 
-    log<<"***WELCOME TO MPCD CUDA CODE!***\nBy: Reyhaneh A. Farimani,
-    reyhaneh.afghahi.farimani@univie.ac.at . \n
-        This code comes with a python code to analyse the results***";
-    log<< "\ninput system:\nensemble:NVT, 
-    thermostat= cell_level_Maxwell_Boltzaman_thermostat, 
-        Lx="<<int(L[0])<<",Ly="<<int(L[1])<<",Lz="<<int(L[2])<<",shear_rate
-            = "<<shear_rate<<",density="<<density<<std::endl;
+    log<<"***WELCOME TO MPCD CUDA CODE!***\nBy: Reyhaneh A. Farimani, reyhaneh.afghahi.farimani@univie.ac.at . \n This code comes with a python code to analyse the results***"<<std::endl;
+    log<< "\ninput system:\nensemble:NVT, thermostat= cell_level_Maxwell_Boltzaman_thermostat, Lx="<<int(L[0])<<",Ly="<<int(L[1])<<",Lz="<<int(L[2])<<",shear_rate = "<<shear_rate<<",density="<<density<<std::endl;
     if (topology==1)
-        log<<"A poly["<<n_md<<"]catenane with "<<m_md<<"
-            monomer in each ring is embeded in the MPCD fluid.\n";
+        log<<"A poly["<<n_md<<"]catenane with "<<m_md<<"monomer in each ring is embeded in the MPCD fluid.\n";
     if (topology==2)
-        log<<"A linked["<<n_md<<"]ring with "<<m_md<<"
-            monomer in each ring is embeded in the MPCD fluid.\n";
+        log<<"A linked["<<n_md<<"]ring with "<<m_md<<" monomer in each ring is embeded in the MPCD fluid.\n";
     if (ux != 0)
-        log<< "SHEAR_FLOW is produced using Lees_Edwards Periodic Boundry Condition:
-            shear direction:x , gradiant direction:z , vorticity direction: y\n";
+        log<<"SHEAR_FLOW is produced using Lees_Edwards Periodic Boundry Condition: shear direction:x , gradiant direction:z , vorticity direction: y\n";
     log<<"simulation time ="<<simulationtime<<", measurments accur every "<<swapsize<<" step.\n" ;
 
 

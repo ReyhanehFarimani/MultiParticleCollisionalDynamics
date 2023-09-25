@@ -167,13 +167,13 @@ int main(int argc, const char* argv[])
                          md_Fx_holder, md_Fy_holder, md_Fz_holder,
                          d_r_mpcd, d_v_mpcd, gen, grid_size);
     }
-    else 
-    {
-        restarting_simulation(basename, inputfile, simuationtime, swapsize,
-                             d_L, d_mdX, d_mdY, d_mdZ, d_mdVx, d_mdVy, d_mdVz,
-                             d_mdAx, d_mdAy, d_mdAz, md_Fx_holder, md_Fy_holder, md_Fz_holder,
-                             d_r_mpcd, d_v_mpcd, ux, N, Nmd, TIME, grid_size);
-    }
+    // else 
+    // {
+    //     restarting_simulation(basename, inputfile, simuationtime, swapsize,
+    //                          d_L, d_mdX, d_mdY, d_mdZ, d_mdVx, d_mdVy, d_mdVz,
+    //                          d_mdAx, d_mdAy, d_mdAz, md_Fx_holder, md_Fy_holder, md_Fz_holder,
+    //                          d_r_mpcd, d_v_mpcd, ux, N, Nmd, TIME, grid_size);
+    // }
 
     /* Setting time for the simulation! */
     double real_time = TIME;                        // It is imprtant for us because of Lees Edwards PBC
