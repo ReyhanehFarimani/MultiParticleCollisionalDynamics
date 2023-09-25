@@ -28,13 +28,25 @@ int N)
 
         //initialisation postions:
         curandGenerateUniformDouble(gen, d_x, N);
+        gpuErrchk( cudaPeekAtLastError() );
+        gpuErrchk( cudaDeviceSynchronize() );
         curandGenerateUniformDouble(gen, d_y, N);
+        gpuErrchk( cudaPeekAtLastError() );
+        gpuErrchk( cudaDeviceSynchronize() );
         curandGenerateUniformDouble(gen, d_z, N);
+        gpuErrchk( cudaPeekAtLastError() );
+        gpuErrchk( cudaDeviceSynchronize() );
         
         //initialisation velocity:
         curandGenerateNormalDouble(gen, d_vx, N, 0, 1);
+        gpuErrchk( cudaPeekAtLastError() );
+        gpuErrchk( cudaDeviceSynchronize() );
         curandGenerateNormalDouble(gen, d_vy, N, 0, 1);
+        gpuErrchk( cudaPeekAtLastError() );
+        gpuErrchk( cudaDeviceSynchronize() );
         curandGenerateNormalDouble(gen, d_vz, N, 0, 1);
+        gpuErrchk( cudaPeekAtLastError() );
+        gpuErrchk( cudaDeviceSynchronize() );
 
 }
 __host__ void start_simulation(std::string file_name, int simulationtime , int swapsize , double *d_L,
