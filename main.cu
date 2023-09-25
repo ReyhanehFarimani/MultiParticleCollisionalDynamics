@@ -59,7 +59,7 @@ int main(int argc, const char* argv[])
                                             // 2 is the bonded ring.
                                             // 0 for linear
                                             // higher number of topology is assigned to systems with morse potential.
-    activity = atoi(argv[16])
+    activity = atoi(argv[16]);
 
     // Setting some constarint based on parsed argument  
     double ux =shear_rate * L[2];
