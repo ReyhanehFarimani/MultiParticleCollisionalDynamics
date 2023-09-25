@@ -29,7 +29,7 @@
 int main(int argc, const char* argv[])
 {
     //Check for number of parsed argument:
-    if( argc !=16 )
+    if( argc !=17 )
     {
         std::cout<<"Argument parsing failed!\n";
         std::string exeName = argv[0];
@@ -57,6 +57,9 @@ int main(int argc, const char* argv[])
     TIME = atoi(argv[14]);                  // Starting time 
     topology = atoi(argv[15]);              // System topology 1 is a poly[n]catenane
                                             // 2 is the bonded ring.
+                                            // 0 for linear
+                                            // higher number of topology is assigned to systems with morse potential.
+    activity = atoi(argv[16])
 
     // Setting some constarint based on parsed argument  
     double ux =shear_rate * L[2];

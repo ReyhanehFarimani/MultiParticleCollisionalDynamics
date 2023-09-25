@@ -9,7 +9,7 @@ double h_md = 0.001;
 double h_mpcd = 0.1;
 int TIME = 0;
 int topology = 1;
-int Activity = 1; //adding the activity to the code, first step adding the macro.
+int activity = 1; //adding the activity to the code, first step adding the macro.
 std::default_random_engine generator(time(0));
 std::uniform_real_distribution<float> realdistribution(0, 1);
 static const int blockSize = 512;
