@@ -191,7 +191,7 @@ int main(int argc, const char* argv[])
             curandGenerateUniformDouble(gen, d_theta, Nc);
             curandGenerateUniformDouble(gen, d_r, 3);
 
-            // MPCD_streaming(d_x, d_y, d_z, d_vx, d_vy, d_vz, h_mpcd, N, grid_size);            
+            MPCD_streaming(d_r_mpcd, d_v_mpcd, h_mpcd, N, grid_size);            
 
             // MD_streaming(d_mdX, d_mdY, d_mdZ, d_mdVx, d_mdVy, d_mdVz,
             //              d_mdAx , d_mdAy , d_mdAz ,md_Fx_holder, md_Fy_holder, md_Fz_holder,
@@ -214,7 +214,7 @@ int main(int argc, const char* argv[])
         }
         //logging:
         logging(basename + "_log.log", real_time, d_mdVx, d_mdVy, d_mdVz,
-                 d_vx, d_vy, d_vz, N, Nmd, grid_size);
+                 d_v_mpcd, N, Nmd, grid_size);
         xyz_trj(basename + "_traj.xyz", d_mdX, d_mdY, d_mdZ, Nmd);
         xyz_trj(basename + "_vel.xyz", d_mdVx, d_mdVy, d_mdVz, Nmd);
         xyz_trj(basename + "_force.xyz", d_mdAx, d_mdAy, d_mdAz, Nmd);

@@ -1,6 +1,6 @@
 __host__ void logging(std::string file_name, int step,
 double *d_mdVx , double *d_mdVy , double *d_mdVz,
-double *d_vx , double *d_vy , double *d_vz, int N , int Nmd, int grid_size)
+double *d_v_mpcd, int N , int Nmd, int grid_size)
 {   
         std::ofstream log (file_name, std::ios_base::app); 
         //help variable:
@@ -8,28 +8,28 @@ double *d_vx , double *d_vy , double *d_vz, int N , int Nmd, int grid_size)
         double E,px,py,pz;
         cudaMalloc((void**)&d_tmp, sizeof(double)*grid_size);
 
-        sumCommMultiBlock<<<grid_size, blockSize>>>(d_vx, N, d_tmp);
+        sumCommMultiBlock<<<grid_size, blockSize>>>(d_v_mpcd, N, d_tmp);
         gpuErrchk( cudaPeekAtLastError() );
         gpuErrchk( cudaDeviceSynchronize() );
         sumCommMultiBlock<<<1, blockSize>>>(d_tmp, grid_size, d_tmp);
         gpuErrchk( cudaPeekAtLastError() );
         gpuErrchk( cudaDeviceSynchronize() );
         cudaMemcpy(&px, d_tmp, sizeof(double), cudaMemcpyDeviceToHost);
-        sumCommMultiBlock<<<grid_size, blockSize>>>(d_vy, N, d_tmp);
+        sumCommMultiBlock<<<grid_size, blockSize>>>(d_v_mpcd + N, N, d_tmp);
         gpuErrchk( cudaPeekAtLastError() );
         gpuErrchk( cudaDeviceSynchronize() );
         sumCommMultiBlock<<<1, blockSize>>>(d_tmp, grid_size, d_tmp);
         gpuErrchk( cudaPeekAtLastError() );
         gpuErrchk( cudaDeviceSynchronize() );
         cudaMemcpy(&py, d_tmp, sizeof(double), cudaMemcpyDeviceToHost);
-        sumCommMultiBlock<<<grid_size, blockSize>>>(d_vz, N, d_tmp);
+        sumCommMultiBlock<<<grid_size, blockSize>>>(d_v_mpcd + 2 * N, N, d_tmp);
         gpuErrchk( cudaPeekAtLastError() );
         gpuErrchk( cudaDeviceSynchronize() );
         sumCommMultiBlock<<<1, blockSize>>>(d_tmp, grid_size, d_tmp);
         gpuErrchk( cudaPeekAtLastError() );
         gpuErrchk( cudaDeviceSynchronize() );
         cudaMemcpy(&pz, d_tmp, sizeof(double), cudaMemcpyDeviceToHost);
-        sumsquared3arrayCommMultiBlock<<<grid_size, blockSize>>>(d_vx, d_vy, d_vz, N, d_tmp);
+        sumsquared3arrayCommMultiBlock<<<grid_size, blockSize>>>(d_v_mpcd, d_v_mpcd + N, d_v_mpcd + 2 * N, N, d_tmp);
         gpuErrchk( cudaPeekAtLastError() );
         gpuErrchk( cudaDeviceSynchronize() );
         sumCommMultiBlock<<<1, blockSize>>>(d_tmp, grid_size, d_tmp);
@@ -46,10 +46,10 @@ double *d_vx , double *d_vy , double *d_vz, int N , int Nmd, int grid_size)
         double md_p_y = momentum(density, h_mdVy, Nmd);
         double md_p_z = momentum(density, h_mdVz, Nmd);
 
-        log<<"Step:"<<step<<"\nTemp = "<<temp_calc(d_vx, d_vy , d_vz , d_mdVx , d_mdVy , d_mdVz , density, N , Nmd, grid_size)<<", <p_x> = "<<
+        log<<"Step:"<<step<<"\nTemp = "<<temp_calc(d_v_mpcd, d_v_mpcd + N , d_v_mpcd + 2*N , d_mdVx , d_mdVy , d_mdVz , density, N , Nmd, grid_size)<<", <p_x> = "<<
         (px+md_p_x)/(N+Nmd*density) <<", <p_y> = "<<(py+md_p_y)/(N+Nmd*density)<<
         ", <p_z> = "<<(pz+md_p_z)/(N+Nmd*density)<<"\n";
-        printf("Step:%i\nTemp = %f, <p_x> = %f, <p_y> = %f, <p_z> = %f\n",step,temp_calc(d_vx, d_vy , d_vz , d_mdVx , d_mdVy , d_mdVz , density, N , Nmd, grid_size), (px+md_p_x)/(N+Nmd*density) ,(py+md_p_y)/(N+Nmd*density) ,(pz+md_p_z)/(N+Nmd*density));
+        printf("Step:%i\nTemp = %f, <p_x> = %f, <p_y> = %f, <p_z> = %f\n",step,temp_calc(d_v_mpcd, d_v_mpcd + N , d_v_mpcd + 2*N , d_mdVx , d_mdVy , d_mdVz , density, N , Nmd, grid_size), (px+md_p_x)/(N+Nmd*density) ,(py+md_p_y)/(N+Nmd*density) ,(pz+md_p_z)/(N+Nmd*density));
 }
 
 __host__ void xyz_trj(std::string file_name,  double *d_mdX, double *d_mdY , double *d_mdZ, int Nmd)
