@@ -229,7 +229,7 @@ int main(int argc, const char* argv[])
     // Free memory of the MPCD particles and cells:
     cudaFree(d_r_mpcd);
     cudaFree(d_v_mpcd); 
-    cudaFree(d_u_mpcd); 
+    cudaFree(d_v_cell); 
     cudaFree(d_rot); 
     cudaFree(d_phi); 
     cudaFree(d_theta);

@@ -10,7 +10,7 @@ __global__ void kerenlInit(double *r, double *v, double *L,double px , double py
         r[tid + 0] -= L[0]/2;
         r[tid + N] -= L[1]/2;
         r[tid + 2 * N] -= L[2]/2;
-        
+
         v[tid + 0] -= px;
         v[tid + N] -= py;
         v[tid + 2 * N] -= pz;
@@ -37,7 +37,7 @@ double *d_mdX , double *d_mdY , double *d_mdZ,
 double *d_mdVx , double *d_mdVy , double *d_mdVz,
 double *d_mdAx , double *d_mdAy , double *d_mdAz,
 double *d_Fx_holder , double *d_Fy_holder, double *d_Fz_holder,
-double *d_r_mpcd
+double *d_r_mpcd,
 double *d_v_mpcd,
 curandGenerator_t gen, int grid_size)
 {
@@ -96,22 +96,22 @@ curandGenerator_t gen, int grid_size)
     double *d_tmp;
     double px,py,pz;
     cudaMalloc((void**)&d_tmp, sizeof(double)*grid_size);
-    mpcd_init(gen, d_x, d_y, d_z, d_vx, d_vy, d_vz, grid_size, N);
-    sumCommMultiBlock<<<grid_size, blockSize>>>(d_vx, N, d_tmp);
+    mpcd_init(gen, d_r_mpcd, d_v_mpcd, grid_size, N);
+    sumCommMultiBlock<<<grid_size, blockSize>>>(d_v_mpcd, N, d_tmp);
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );
     sumCommMultiBlock<<<1, blockSize>>>(d_tmp, grid_size, d_tmp);
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );
     cudaMemcpy(&px, d_tmp, sizeof(double), cudaMemcpyDeviceToHost);
-    sumCommMultiBlock<<<grid_size, blockSize>>>(d_vy, N, d_tmp);
+    sumCommMultiBlock<<<grid_size, blockSize>>>(d_v_mpcd + N, N, d_tmp);
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );
     sumCommMultiBlock<<<1, blockSize>>>(d_tmp, grid_size, d_tmp);
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );
     cudaMemcpy(&py, d_tmp, sizeof(double), cudaMemcpyDeviceToHost);
-    sumCommMultiBlock<<<grid_size, blockSize>>>(d_vz, N, d_tmp);
+    sumCommMultiBlock<<<grid_size, blockSize>>>(d_v_mpcd + 2 *N, N, d_tmp);
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );
     sumCommMultiBlock<<<1, blockSize>>>(d_tmp, grid_size, d_tmp);
@@ -119,7 +119,7 @@ curandGenerator_t gen, int grid_size)
     gpuErrchk( cudaDeviceSynchronize() );
     cudaMemcpy(&pz, d_tmp, sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(d_L, &L, 3*sizeof(double) , cudaMemcpyHostToDevice);
-    kerenlInit<<<grid_size,blockSize>>>(d_x,d_y,d_z,d_vx, d_vy, d_vz,d_L,px/N,py/N,pz/N,N);
+    kerenlInit<<<grid_size,blockSize>>>(d_r_mpcd, d_v_mpcd,d_L ,px/N ,py/N, pz/N, N);
 
     double pos[3] ={0,0,0};
     //initMD:
