@@ -3,12 +3,13 @@ int n_md = 1;
 int m_md = 100;
 int swapsize=100;
 int simuationtime=1000;
-double shear_rate = 0.00;
+double shear_rate = 0.8;
 int density =10;
 double h_md = 0.001;
 double h_mpcd = 0.1;
 int TIME = 0;
 int topology = 1;
+int Activity = 1;//I added this variable to determine whether we have activity or not. 
 std::default_random_engine generator(time(0));
 std::uniform_real_distribution<float> realdistribution(0, 1);
 static const int blockSize = 512;
@@ -37,5 +38,3 @@ __device__ double atomicAdd(double* address, double val)
     return __longlong_as_double(old);
 }
 #endif
-
-
