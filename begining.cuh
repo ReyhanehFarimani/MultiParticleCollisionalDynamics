@@ -2,17 +2,19 @@ __global__ void kerenlInit(double *r, double *v, double *L,double px , double py
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x ;
     if (tid<N)
-    {
-        r[3 * tid + 0] *= L[0];
-        r[3 * tid + 1] *= L[1];
-        r[3 * tid + 2] *= L[2];
-        r[3 * tid + 0] -= L[0]/2;
-        r[3 * tid + 1] -= L[1]/2;
-        r[3 * tid + 2] -= L[2]/2;
-        v[3 * tid + 0] -= px;
-        v[3 * tid + 1] -= py;
-        v[3 * tid + 2] -= pz;
-    }
+
+        r[tid + 0] *= L[0];
+        r[tid + N] *= L[1];
+        r[tid + 2 * N] *= L[2];
+
+        r[tid + 0] -= L[0]/2;
+        r[tid + N] -= L[1]/2;
+        r[tid + 2 * N] -= L[2]/2;
+        
+        v[tid + 0] -= px;
+        v[tid + N] -= py;
+        v[tid + 2 * N] -= pz;
+
 
 }
 __host__ void mpcd_init(curandGenerator_t gen,
