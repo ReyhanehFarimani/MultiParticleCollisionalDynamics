@@ -1,0 +1,1 @@
+GPU implementation of Multi-Particle Collision Dynamics coupled to molecular dynamics, written in CUDA/C++. Includes streaming and collision steps, Lees–Edwards boundary conditions, GPU reductions, logging, restart handling, and trajectory analysis.
